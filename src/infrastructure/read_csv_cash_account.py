@@ -15,6 +15,7 @@ class ReadCsvCashAcount():
             Args:
                 file_path: 処理するデータのパス
                 target_ym: 処理するデータの対象年月
+                cash_record.csv: 取引履歴のcsvファイル名
             
             Returns:
                 Polars_DataFrame: 処理するデータのDataFrame    
