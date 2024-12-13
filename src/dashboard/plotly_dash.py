@@ -20,10 +20,12 @@ class DashBoard:
         # configファイルの読み込み
         with open(config_path) as _f:
             self.config = yaml.load(_f, Loader=yaml.FullLoader)
-
+        # データの読み込み
+        self._pl_df = self.__rwc.read_csv(self.config["tmp"]["file_path"], self.target_ym)
     def run_all(self):
-        self.plot_figure()  # 図の作成
+        self.data()  # 図の作成
         self.createdash()  # ダッシュボードの作成
+        self.__app.run_server(debug=True)  # サーバーを起動
 
     def update_graph(self, tragde_types):
         if tragde_types is None or tragde_types == []:
@@ -51,14 +53,12 @@ class DashBoard:
         )
         return dcc.Graph(figure=self.fig)
 
-    def plot_figure(self):
+    def data(self):
         """
-        ダッシュボードで使用する図の作成を行う
+        ダッシュボードで使用するデータの作成を行う
         """
-        # データの読み込み
-        _pl_df = self.__rwc.read_csv(self.config["tmp"]["file_path"], self.target_ym)
         self._pl_df_balance = (
-            _pl_df.group_by(pl.col("取引日"))
+            self._pl_df.group_by(pl.col("取引日"))
             .agg(
                 [
                     pl.col("残高").last().alias("残高"),
@@ -111,9 +111,8 @@ class DashBoard:
             ],
             style={"margin-left": "10%", "margin-right": "10%"},
         )
+
         self.__app.callback(
             Output(component_id="stock_chart", component_property="children"),
             Input(component_id="stock_chart_dropdown", component_property="value"),
         )(self.update_graph)
-
-        self.__app.run_server()
